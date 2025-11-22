@@ -55,9 +55,7 @@ def test_index_form_post(client):
     )
 
 
-def test_duplicated_url_in_form(
-    client, duplicated_custom_id_msg, short_python_url
-):
+def test_duplicated_url_in_form(client, duplicated_custom_id_msg, short_python_url):
     response = client.post(
         INDEX_URL,
         data={

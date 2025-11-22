@@ -30,7 +30,8 @@ YaCut — это веб-приложение на Flask, позволяющее 
 
 1. Клонируйте репозиторий:
    ```
-   git clone https://github.com/ArtemYuvanov/ASYNC-YACUT-MAIN.git
+   git clone https://github.com/ArtemYuvanov/async-yacut-master.git
+   cd async-yacut-master
    ```
 2. Установите и активируйте виртуальное окружение:
    ```
@@ -51,10 +52,7 @@ YaCut — это веб-приложение на Flask, позволяющее 
    ```
 5. Инициализируйте базу данных:
    ```
-   flask shell
-   >>> from yacut import db
-   >>> db.create_all()
-   >>> exit()
+   flask db upgrade
    ```
 6. Запустите сервер:
    ```
@@ -62,70 +60,35 @@ YaCut — это веб-приложение на Flask, позволяющее 
    ```
 
 Приложение будет доступно по адресу:
-http://127.0.0.1:5000
+[YaCut](http://127.0.0.1:5000)
 
-## Использование API
+## Документация API
 
-1. Создание короткой ссылки
+-**Файл спецификации API**
+[openapi.yml](https://github.com/ArtemYuvanov/async-yacut-master/blob/master/openapi.yml)
 
-POST /api/id/
-Пример запроса:
-```
-{
-  "url": "https://www.python.org/",
-  "custom_id": "python"
-}
-```
-Пример ответа (201):
-```
-{
-  "url": "https://www.python.org/",
-  "short_link": "http://127.0.0.1:5000/python"
-}
-```
-Ошибки (400):
-```
-{"message": "Указано недопустимое имя для короткой ссылки"}
+-**Редактор Swagger для просмотра спецификации**
+[Swagger Editor](https://editor.swagger.io)
 
-{"message": "Предложенный вариант короткой ссылки уже существует."}
-
-{"message": "\"url\" является обязательным полем!"}
-
-{"message": "Отсутствует тело запроса"}
-```
-2. Получение оригинальной ссылки
-
-GET /api/id/<short_id>/
-
-Пример ответа (200):
-```
-{"url": "https://www.python.org/"}
-```
-Ошибки (404):
-```
-{"message": "Указанный id не найден"}
-```
 ## Структура проекта
 
 yacut/
 ├── __init__.py
 ├── api_views.py         # API эндпоинты
+├── async_views.py       # Ассинхронная загрузка файлов
+├── constants.py         # Константы проекта
 ├── error_handlers.py    # Кастомные обработчики ошибок API
 ├── forms.py             # Flask-WTF формы
 ├── models.py            # SQLAlchemy модель URLMap
 ├── static/              # Статические файлы (CSS, JS)
 ├── templates/           # HTML-шаблоны (index.html и др.)
-├── utils.py             # Утилиты (генерация коротких id)
+├── .py             # Утилиты (генерация коротких id)
 └── views.py             # Основные маршруты сайта
 
-
-## Примеры коротких ссылок
-
-Исходная ссылка Короткая ссылка
-https://python.org http://127.0.0.1:5000/python
-https://peps.python.org/pep-0008/ http://127.0.0.1:5000/pep8
 
 ## Автор
 
 Артём Юванов
+https://github.com/ArtemYuvanov
+
 Проект создан в рамках учебного курса Flask + API

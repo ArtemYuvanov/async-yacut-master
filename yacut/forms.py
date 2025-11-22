@@ -1,19 +1,23 @@
-import re
-
 from flask_wtf import FlaskForm
 from wtforms import MultipleFileField, StringField, SubmitField, URLField
 from wtforms.validators import (
-    URL,
     DataRequired,
     Length,
     Optional,
     Regexp,
-    ValidationError,
+    URL
 )
 
-ALLOWED_RE = r"^[A-Za-z0-9]+$"
-MAX_CUSTOM_LEN = 16
-RESERVED_IDS = {"files"}
+from yacut.constants import ALLOWED_RE, SHORT_MAX_LEN
+from yacut.models import URLMap
+
+
+ERR_URL_REQUIRED = "Длинная ссылка обязательна"
+ERR_URL_INVALID = "Некорректный URL"
+ERR_CUSTOM_INVALID = "Указано недопустимое имя для короткой ссылки"
+ERR_CUSTOM_EXISTS = "Предложенный вариант короткой ссылки уже существует"
+ERR_FILES_REQUIRED = "Выберите хотя бы один файл"
+SUBMIT_CREATE_LABEL = "Создать"
 
 
 class URLForm(FlaskForm):
@@ -22,8 +26,12 @@ class URLForm(FlaskForm):
     original_link = URLField(
         "Длинная ссылка",
         validators=[
-            DataRequired(message="Длинная ссылка обязательна"),
-            URL(message="Некорректный URL"),
+            DataRequired(message=ERR_URL_REQUIRED),
+            URL(message=ERR_URL_INVALID),
+            Length(
+                max=URLMap.original.type.length,
+                message=f"Максимум {URLMap.original.type.length} символов",
+            ),
         ],
     )
     custom_id = StringField(
@@ -31,38 +39,13 @@ class URLForm(FlaskForm):
         validators=[
             Optional(),
             Length(
-                max=MAX_CUSTOM_LEN,
-                message=f"Максимум {MAX_CUSTOM_LEN} символов",
+                max=SHORT_MAX_LEN,
+                message=f"Максимум {SHORT_MAX_LEN} символов"
             ),
-            Regexp(
-                ALLOWED_RE,
-                message="Указано недопустимое имя для короткой ссылки",
-            ),
+            Regexp(ALLOWED_RE, message=ERR_CUSTOM_INVALID),
         ],
     )
-    submit = SubmitField("Создать")
-
-    def validate_custom_id(self, field):
-        """Проверяет корректность и занятость custom_id."""
-        if not field.data:
-            return
-        candidate = field.data.strip()
-        if candidate.lower() in RESERVED_IDS:
-            raise ValidationError(
-                "Предложенный вариант короткой ссылки уже существует."
-            )
-        if len(candidate) > MAX_CUSTOM_LEN or not re.match(
-            ALLOWED_RE, candidate
-        ):
-            raise ValidationError(
-                "Указано недопустимое имя для короткой ссылки"
-            )
-        from yacut.models import URLMap
-
-        if URLMap.query.filter_by(short=candidate).first():
-            raise ValidationError(
-                "Предложенный вариант короткой ссылки уже существует."
-            )
+    submit = SubmitField(SUBMIT_CREATE_LABEL)
 
 
 class FilesForm(FlaskForm):
@@ -70,5 +53,5 @@ class FilesForm(FlaskForm):
 
     files = MultipleFileField(
         "Файлы",
-        validators=[DataRequired(message="Выберите хотя бы один файл")],
+        validators=[DataRequired(message=ERR_FILES_REQUIRED)],
     )

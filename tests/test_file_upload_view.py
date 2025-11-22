@@ -80,9 +80,7 @@ async def test_upload_files(client, mock_server, monkeypatch):
             f"загрузки файлов на странице `{FILES_URL}` выводятся названия "
             "всех загруженных файлов."
         )
-        assert not (
-            EXPECTED_API_CALLS - user_calls
-        ), COMMON_ASSERT_MSG_FOR_UPLOAD_FILES
+        assert not (EXPECTED_API_CALLS - user_calls), COMMON_ASSERT_MSG_FOR_UPLOAD_FILES
 
     loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, sync_test)

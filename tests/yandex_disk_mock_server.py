@@ -37,9 +37,7 @@ async def mock_server(aiohttp_server):
     async def handle_fields_param(request, response_data):
         fields_query_param = request.query.get("fields")
         if fields_query_param:
-            keys_to_remove = response_data.keys() - set(
-                fields_query_param.split(",")
-            )
+            keys_to_remove = response_data.keys() - set(fields_query_param.split(","))
             for key in keys_to_remove:
                 del response_data[key]
         return response_data
@@ -79,9 +77,7 @@ async def mock_server(aiohttp_server):
             "Убедитесь, что PUT-запрос на загрузку файла на Яндекс Диск "
             "содержит загружаемые данные."
         )
-        location_header = "/disk/{}".format(
-            quote(file_names[request.url.name])
-        )
+        location_header = "/disk/{}".format(quote(file_names[request.url.name]))
         return web.Response(headers={"Location": location_header}, status=201)
 
     async def mock_get_download_link_handler(request):

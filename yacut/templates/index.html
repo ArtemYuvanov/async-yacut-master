@@ -27,20 +27,15 @@
           <input type="submit" class="btn btn-primary" value="Создать">
         </form>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="alert alert-{{ category }} mt-3">
-                {% if category == 'success' %}
-                  Ваша короткая ссылка: <a href="{{ message }}" target="_blank" rel="noopener noreferrer">{{ message }}</a>
-                {% else %}
-                  {{ message }}
-                {% endif %}
-              </div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
-
+        {% if short_url %}
+          <div class="alert alert-success mt-3">
+            Ваша короткая ссылка:
+            <a href="{{ short_url }}" target="_blank" rel="noopener noreferrer">
+              {{ short_url }}
+            </a>
+          </div>
+        {% endif %}
+        
       </div>
     </div>
 

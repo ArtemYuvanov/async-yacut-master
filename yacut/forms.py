@@ -8,8 +8,7 @@ from wtforms.validators import (
     URL
 )
 
-from yacut.constants import ALLOWED_RE, SHORT_MAX_LEN
-from yacut.models import URLMap
+from yacut.constants import ALLOWED_RE, ORIGINAL_MAX_LEN, SHORT_MAX_LEN
 
 LABEL_ORIGINAL_LINK = "Длинная ссылка"
 LABEL_CUSTOM_ID = "Ваш вариант короткой ссылки"
@@ -19,7 +18,7 @@ ERR_URL_INVALID = "Некорректный URL"
 ERR_CUSTOM_INVALID = "Указано недопустимое имя для короткой ссылки"
 ERR_CUSTOM_EXISTS = "Предложенный вариант короткой ссылки уже существует"
 ERR_FILES_REQUIRED = "Выберите хотя бы один файл"
-ERR_ORIGINAL_TOO_LONG = f"Максимум {URLMap.original.type.length} символов"
+ERR_ORIGINAL_TOO_LONG = f"Максимум {ORIGINAL_MAX_LEN} символов"
 ERR_CUSTOM_TOO_LONG = f"Максимум {SHORT_MAX_LEN} символов"
 SUBMIT_CREATE_LABEL = "Создать"
 
@@ -33,7 +32,7 @@ class URLForm(FlaskForm):
             DataRequired(message=ERR_URL_REQUIRED),
             URL(message=ERR_URL_INVALID),
             Length(
-                max=URLMap.original.type.length,
+                max=ORIGINAL_MAX_LEN,
                 message=ERR_ORIGINAL_TOO_LONG
             ),
         ],

@@ -2,8 +2,7 @@ import random
 import re
 from datetime import datetime, timezone
 
-from flask import url_for
-from sqlalchemy.exc import SQLAlchemyError
+from flask import current_app, url_for
 
 from yacut import db
 from yacut.constants import (
@@ -37,53 +36,47 @@ class URLMap(db.Model):
     )
 
     @staticmethod
-    def _is_reserved(short: str) -> bool:
-        """Проверка, попадает ли идентификатор в список зарезервированных."""
-        return short in RESERVED_SHORTS
-
-    @staticmethod
-    def generate_unique_short_id() -> str:
-        """Попытки сгенерировать уникальный short id."""
+    def generate_short() -> str:
+        """Сгенерировать уникальное значение short."""
         for _ in range(MAX_GENERATION_ATTEMPTS):
-            candidate = "".join(
-                random.choices(SHORT_ALPHABET, k=SHORT_LENGTH)
-            )
-            if URLMap.query.filter_by(short=candidate).first() is None:
-                if not URLMap._is_reserved(candidate):
+            candidate = "".join(random.choices(SHORT_ALPHABET, k=SHORT_LENGTH))
+            if candidate not in RESERVED_SHORTS:
+                if URLMap.query.filter_by(short=candidate).first() is None:
                     return candidate
         raise RuntimeError(ERR_GENERATION_FAILED)
 
     @staticmethod
     def create(original: str, short: str = None) -> "URLMap":
-        """Создаёт и сохраняет в БД запись с оригинальным URL и short id."""
-        if short:
-            candidate = short
-            if len(candidate) > SHORT_MAX_LEN:
-                raise ValueError(ERR_SHORT_INVALID)
-            if URLMap._is_reserved(candidate):
-                raise ValueError(ERR_SHORT_EXISTS)
-            if re.match(ALLOWED_RE, candidate) is None:
-                raise ValueError(ERR_SHORT_INVALID)
-            if URLMap.query.filter_by(short=candidate).first():
-                raise ValueError(ERR_SHORT_EXISTS)
-            short_id = candidate
-        else:
-            short_id = URLMap.generate_unique_short_id()
+        """Создаёт и сохраняет объект URLMap."""
 
-        mapping = URLMap(original=original, short=short_id)
-        try:
-            db.session.add(mapping)
-            db.session.commit()
-        except SQLAlchemyError:
-            db.session.rollback()
-            raise RuntimeError("Ошибка записи в базу данных")
+        if len(original) > ORIGINAL_MAX_LEN:
+            raise ValueError("Слишком длинный URL.")
+
+        if short:
+            if len(short) > SHORT_MAX_LEN:
+                raise ValueError(ERR_SHORT_INVALID)
+            if short in RESERVED_SHORTS:
+                raise ValueError(ERR_SHORT_EXISTS)
+            if re.match(ALLOWED_RE, short) is None:
+                raise ValueError(ERR_SHORT_INVALID)
+            if URLMap.query.filter_by(short=short).first():
+                raise ValueError(ERR_SHORT_EXISTS)
+        else:
+            short = URLMap.generate_short()
+
+        mapping = URLMap(original=original, short=short)
+        db.session.add(mapping)
+        db.session.commit()
         return mapping
 
     def short_url(self) -> str:
-        """Возвращает внешний URL короткой ссылки для этого объекта."""
-        return url_for("redirect_short", short=self.short, _external=True)
+        return url_for(
+            current_app.config["REDIRECT_VIEW_NAME"],
+            short=self.short,
+            _external=True
+        )
 
     @staticmethod
-    def get_by_short(short):
-        """Получить объект по короткой ссылке."""
+    def get_or_404(short: str):
+        """Получить объект по short, если нет — 404."""
         return URLMap.query.filter_by(short=short).first_or_404()

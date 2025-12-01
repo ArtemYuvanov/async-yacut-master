@@ -69,6 +69,7 @@ YaCut — это веб-приложение на Flask, позволяющее 
 
 ## Структура проекта
 
+```
 yacut/
 ├── __init__.py
 ├── api_views.py         # API эндпоинты
@@ -79,9 +80,8 @@ yacut/
 ├── models.py            # SQLAlchemy модель URLMap
 ├── static/              # Статические файлы (CSS, JS)
 ├── templates/           # HTML-шаблоны (index.html и др.)
-├── .py             # Утилиты (генерация коротких id)
 └── views.py             # Основные маршруты сайта
-
+```
 
 ## Автор
 

@@ -48,20 +48,22 @@ def files():
         flash(str(exc), "danger")
         return render_template("files.html", form=form)
 
-    uploaded_files = [
-        {"filename": f.filename, "url": url}
-        for f, url in zip(form.files.data, results)
-    ]
-
     try:
-        for item in uploaded_files:
-            item["short_url"] = URLMap.create(
-                original=item["url"]
-            ).short_url()
-    except Exception as exc:
+        return render_template(
+            "files.html",
+            form=form,
+            uploaded_files=[
+                {
+                    "filename": f.filename,
+                    "url": url,
+                    "short_url": URLMap.create(
+                        original=url,
+                        from_form=True
+                    ).short_url(),
+                }
+                for f, url in zip(form.files.data, results)
+            ],
+        )
+    except ValueError as exc:
         flash(str(exc), "danger")
         return render_template("files.html", form=form)
-
-    return render_template(
-        "files.html", form=form, uploaded_files=uploaded_files
-    )

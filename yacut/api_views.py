@@ -3,7 +3,6 @@ from http import HTTPStatus
 from flask import jsonify, request
 
 from yacut import app
-from yacut.constants import SHORT_MAX_LEN
 from yacut.models import URLMap
 from yacut.error_handlers import InvalidAPIUsage
 
@@ -23,16 +22,13 @@ def api_create_id():
     if "url" not in data or not data.get("url"):
         raise InvalidAPIUsage(ERR_URL_REQUIRED)
 
-    custom_id = data.get("custom_id")
-    if custom_id and len(custom_id) > SHORT_MAX_LEN:
-        raise InvalidAPIUsage(ERR_SHORT_INVALID)
-
     try:
         return jsonify({
             "url": data["url"],
             "short_link": URLMap.create(
                 original=data["url"],
-                short=data.get("custom_id")
+                short=data.get("custom_id"),
+                from_form=False
             ).short_url()
         }), HTTPStatus.CREATED
 
@@ -43,9 +39,8 @@ def api_create_id():
 @app.route("/api/id/<string:short>/", methods=["GET"])
 def api_get_url(short):
     """Возвращает исходный URL по короткому идентификатору."""
-    try:
-        mapping = URLMap.get_or_404(short)
-    except Exception:
+    mapping = URLMap.get(short)
+    if mapping is None:
         raise InvalidAPIUsage(ERR_NOT_FOUND, status_code=HTTPStatus.NOT_FOUND)
 
     return jsonify({"url": mapping.original}), HTTPStatus.OK

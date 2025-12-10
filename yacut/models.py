@@ -22,6 +22,9 @@ ERR_GENERATION_FAILED = (
     "Не удалось сгенерировать уникальный короткий идентификатор "
     f"после {MAX_GENERATION_ATTEMPTS} попыток"
 )
+ERR_ORIGINAL_TOO_LONG = (
+    f"Максимальная длина оригинального URL — {ORIGINAL_MAX_LEN} символов."
+)
 
 
 class URLMap(db.Model):
@@ -51,10 +54,18 @@ class URLMap(db.Model):
         raise RuntimeError(ERR_GENERATION_FAILED)
 
     @staticmethod
-    def create(original: str, short: str = None) -> "URLMap":
+    def create(
+        original: str,
+        short: str = None,
+        *,
+        from_form: bool = False
+    ) -> "URLMap":
         """Создаёт и сохраняет объект URLMap."""
-
+        if not from_form and len(original) > ORIGINAL_MAX_LEN:
+            raise ValueError(ERR_ORIGINAL_TOO_LONG)
         if short:
+            if not from_form and len(short) > SHORT_MAX_LEN:
+                raise ValueError(ERR_SHORT_INVALID)
             if short in RESERVED_SHORTS:
                 raise ValueError(ERR_SHORT_EXISTS)
             if re.match(ALLOWED_RE, short) is None:
@@ -80,3 +91,8 @@ class URLMap(db.Model):
     def get_or_404(short: str):
         """Получить объект по short, если нет — 404."""
         return URLMap.query.filter_by(short=short).first_or_404()
+
+    @staticmethod
+    def get(short: str):
+        """Возвращает объект URLMap по short или None, если не найден."""
+        return URLMap.query.filter_by(short=short).first()

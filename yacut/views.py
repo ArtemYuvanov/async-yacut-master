@@ -20,7 +20,8 @@ def index():
             form=form,
             short_url=URLMap.create(
                 original=form.original_link.data,
-                short=form.custom_id.data
+                short=form.custom_id.data,
+                validate=False
             ).short_url()
         )
     except (ValueError, Exception) as exc:
@@ -57,8 +58,7 @@ def files():
                     "filename": uploaded_file.filename,
                     "url": uploaded_url,
                     "short_url": URLMap.create(
-                        original=uploaded_url,
-                        validate=True
+                        original=uploaded_url
                     ).short_url(),
                 }
                 for uploaded_file, uploaded_url in zip(

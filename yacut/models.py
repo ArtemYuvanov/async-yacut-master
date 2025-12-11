@@ -71,7 +71,7 @@ class URLMap(db.Model):
         if short:
             if validate and len(short) > SHORT_MAX_LEN:
                 raise ValueError(ERR_SHORT_INVALID)
-            if validate and short in RESERVED_SHORTS:
+            if short in RESERVED_SHORTS:
                 raise ValueError(ERR_SHORT_EXISTS)
             if validate and re.match(ALLOWED_RE, short) is None:
                 raise ValueError(ERR_SHORT_INVALID)

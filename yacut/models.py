@@ -63,17 +63,17 @@ class URLMap(db.Model):
         original: str,
         short: str = None,
         *,
-        validate: bool = False
+        validate: bool = True
     ) -> "URLMap":
         """Создаёт и сохраняет объект URLMap."""
-        if not validate and len(original) > ORIGINAL_MAX_LEN:
+        if validate and len(original) > ORIGINAL_MAX_LEN:
             raise ValueError(ERR_ORIGINAL_TOO_LONG)
         if short:
-            if not validate and len(short) > SHORT_MAX_LEN:
+            if validate and len(short) > SHORT_MAX_LEN:
                 raise ValueError(ERR_SHORT_INVALID)
-            if short in RESERVED_SHORTS:
+            if validate and short in RESERVED_SHORTS:
                 raise ValueError(ERR_SHORT_EXISTS)
-            if not validate and re.match(ALLOWED_RE, short) is None:
+            if validate and re.match(ALLOWED_RE, short) is None:
                 raise ValueError(ERR_SHORT_INVALID)
             if URLMap.get(short):
                 raise ValueError(ERR_SHORT_EXISTS)
